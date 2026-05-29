@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RACERZ</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --red: #e8253a;
+        --blue: #2563eb;
+        --white: #f5f5f0;
+        --offwhite: #e8e6df;
+        --lilac: #b8b8cc;
+        --dark: #1a1820;
+        --panel: #1e1c2a;
+        --accent: #e8253a;
+      }
+      body {
+        background: #14121e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: "Barlow Condensed", sans-serif;
+        overflow: hidden;
+      }
+      #wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+      }
+
+      /* TOP BAR */
+      #hud-top {
+        width: 460px;
+        display: flex;
+        align-items: stretch;
+        gap: 2px;
+        margin-bottom: 2px;
+      }
+      .hud-cell {
+        background: #1e1c2a;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 5px 12px;
+        position: relative;
+      }
+      .hud-cell::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--red);
+      }
+      .hud-lbl {
+        font-family: "Barlow Condensed";
+        font-size: 9px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.35);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        display: block;
+      }
+      .hud-jp {
+        font-family: "Noto Sans JP";
+        font-size: 7px;
+        color: rgba(255, 255, 255, 0.18);
+        display: block;
+        line-height: 1.2;
+      }
+      .hud-val {
+        font-family: "Bebas Neue";
+        font-size: 26px;
+        color: var(--white);
+        letter-spacing: 2px;
+        display: block;
+        line-height: 1;
+      }
+      .hud-val.red {
+        color: var(--red);
+      }
+      .hud-val.blue {
+        color: #60a5fa;
+      }
+      .hud-title {
+        flex: 0 0 auto;
+        background: var(--red);
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 18px;
+      }
+      .hud-title::after {
+        display: none;
+      }
+      .title-r {
+        font-family: "Bebas Neue";
+        font-size: 28px;
+        color: #fff;
+        letter-spacing: 3px;
+        line-height: 1;
+      }
+      .title-sub {
+        font-family: "Noto Sans JP";
+        font-size: 7px;
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 1px;
+      }
+      .cell-score {
+        flex: 1;
+      }
+      .cell-best {
+        flex: 1;
+        text-align: right;
+      }
+
+      /* CANVAS */
+      #cw {
+        position: relative;
+      }
+      canvas {
+        display: block;
+      }
+
+      /* BOTTOM BAR */
+      #hud-bot {
+        width: 460px;
+        display: flex;
+        gap: 2px;
+        margin-top: 2px;
+      }
+      .bot-cell {
+        background: #1e1c2a;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 6px 12px;
+        position: relative;
+      }
+      .bot-cell::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--blue);
+      }
+      #fuel-cell {
+        flex: 1;
+      }
+      #speed-cell {
+        flex: 0 0 130px;
+        text-align: right;
+      }
+      #fuel-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+      #fuel-track {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      #fuel-fill {
+        height: 100%;
+        background: var(--blue);
+        transition:
+          width 0.3s,
+          background 0.3s;
+      }
+      .spd-num {
+        font-family: "Bebas Neue";
+        font-size: 28px;
+        color: var(--white);
+        letter-spacing: 1px;
+      }
+      .spd-unit {
+        font-family: "Barlow Condensed";
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.35);
+        letter-spacing: 2px;
+      }
+      .lap-badge {
+        background: var(--red);
+        color: #fff;
+        font-family: "Bebas Neue";
+        font-size: 10px;
+        letter-spacing: 2px;
+        padding: 1px 7px;
+        display: inline-block;
+        margin-bottom: 3px;
+      }
+
+      /* OVERLAY */
+      #overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(20, 18, 30, 0.93);
+        z-index: 50;
+      }
+      .ov-eyebrow {
+        font-family: "Barlow Condensed";
+        font-size: 11px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.3);
+        letter-spacing: 5px;
+        margin-bottom: 8px;
+        border-top: 2px solid var(--red);
+        padding-top: 8px;
+      }
+      #ov-main {
+        font-family: "Bebas Neue";
+        font-size: 64px;
+        color: var(--white);
+        letter-spacing: 8px;
+        line-height: 1;
+        margin-bottom: 2px;
+        text-shadow:
+          4px 0 0 var(--red),
+          -2px 0 0 var(--blue);
+      }
+      .ov-sub {
+        font-family: "Noto Sans JP";
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.3);
+        letter-spacing: 3px;
+        margin-bottom: 30px;
+      }
+      .ov-score-val {
+        font-family: "Bebas Neue";
+        font-size: 52px;
+        color: var(--white);
+        letter-spacing: 3px;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .ov-best-val {
+        font-family: "Barlow Condensed";
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        margin-bottom: 32px;
+      }
+      .ov-best-val.new {
+        color: var(--red);
+      }
+      .ov-best-val.old {
+        color: rgba(255, 255, 255, 0.3);
+      }
+      #start-btn {
+        font-family: "Bebas Neue";
+        font-size: 16px;
+        letter-spacing: 6px;
+        color: #fff;
+        background: var(--red);
+        border: none;
+        padding: 12px 48px;
+        cursor: pointer;
+        clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+        transition:
+          background 0.15s,
+          transform 0.1s;
+      }
+      #start-btn:hover {
+        background: #ff3347;
+        transform: scale(1.04);
+      }
+      #start-btn:active {
+        transform: scale(0.97);
+      }
+      .ov-hint {
+        font-family: "Barlow Condensed";
+        font-size: 10px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.18);
+        letter-spacing: 3px;
+        margin-top: 14px;
+      }
+      /* Checkered corner deco */
+      .check-deco {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        display: grid;
+        grid-template-columns: repeat(4, 8px);
+        gap: 0;
+        opacity: 0.25;
+      }
+      .check-deco span {
+        width: 8px;
+        height: 8px;
+        background: var(--white);
+      }
+      .check-deco span:nth-child(odd) {
+        background: transparent;
+      }
+      .check-deco2 {
+        position: absolute;
+        bottom: 12px;
+        left: 14px;
+        display: grid;
+        grid-template-columns: repeat(4, 8px);
+        gap: 0;
+        opacity: 0.25;
+      }
+      .check-deco2 span {
+        width: 8px;
+        height: 8px;
+        background: var(--white);
+      }
+      .check-deco2 span:nth-child(even) {
+        background: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrap">
+      <div id="hud-top">
+        <div class="hud-cell cell-score">
+          <div class="lap-badge">R SPACE TEAM</div>
+          <span class="hud-lbl">SCORE スコア</span>
+          <span class="hud-val red" id="score-disp">000000</span>
+        </div>
+        <div class="hud-title">
+          <div class="title-r">RACERZ</div>
+          <div class="title-sub">スペースチーム</div>
+        </div>
+        <div class="hud-cell cell-best">
+          <span class="hud-lbl" style="text-align: right; display: block"
+            >BEST 最高</span
+          >
+          <span class="hud-val" style="color: #60a5fa" id="best-disp"
+            >000000</span
+          >
+        </div>
+      </div>
+
+      <div id="cw">
+        <canvas id="c" width="460" height="580"></canvas>
+        <div id="overlay">
+          <div class="check-deco">
+            <span></span><span style="background: var(--white)"></span
+            ><span></span><span style="background: var(--white)"></span>
+            <span style="background: var(--white)"></span><span></span
+            ><span style="background: var(--white)"></span><span></span>
+            <span></span><span style="background: var(--white)"></span
+            ><span></span><span style="background: var(--white)"></span>
+          </div>
+          <div class="check-deco2">
+            <span></span><span style="background: var(--white)"></span
+            ><span></span><span style="background: var(--white)"></span>
+            <span style="background: var(--white)"></span><span></span
+            ><span style="background: var(--white)"></span><span></span>
+            <span></span><span style="background: var(--white)"></span
+            ><span></span><span style="background: var(--white)"></span>
+          </div>
+          <div class="ov-eyebrow">— BUILT FOR SPEED —</div>
+          <div id="ov-main">RACERZ</div>
+          <div class="ov-sub">スピードのために · あなたのために</div>
+          <div class="ov-score-val" id="ov-score" style="display: none">
+            000000
+          </div>
+          <div class="ov-best-val" id="ov-best" style="display: none"></div>
+          <button id="start-btn">START RACE</button>
+          <div class="ov-hint">← → ARROWS · A/D · SWIPE TO STEER</div>
+        </div>
+      </div>
+
+      <div id="hud-bot">
+        <div class="bot-cell" id="fuel-cell">
+          <div id="fuel-row">
+            <span
+              style="
+                font-family: &quot;Barlow Condensed&quot;;
+                font-size: 9px;
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.4);
+                letter-spacing: 3px;
+              "
+              >FUEL フューエル</span
+            >
+            <span
+              style="
+                font-family: &quot;Bebas Neue&quot;;
+                font-size: 14px;
+                color: var(--white);
+              "
+              id="fuel-pct"
+              >100%</span
+            >
+          </div>
+          <div id="fuel-track">
+            <div id="fuel-fill" style="width: 100%"></div>
+          </div>
+        </div>
+        <div class="bot-cell" id="speed-cell">
+          <span class="hud-lbl" style="text-align: right; display: block"
+            >SPEED ブースト</span
+          >
+          <span class="spd-num" id="spd-disp">000</span>
+          <span class="spd-unit"> KM/H</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const C = document.getElementById("c"),
+        ctx = C.getContext("2d");
+      const W = C.width,
+        H = C.height;
+      const LANES = 3,
+        LW = W / LANES;
+
+      // Porsche 911 proportions — wide, low, rounded
+      const CW = 52,
+        CH = 54; // wide & squat like a 911
+      const TW = 46,
+        TH = 50;
+      const FW = 20,
+        FH = 24;
+
+      let state,
+        raf,
+        tick = 0;
+
+      const PAL = {
+        road: "#1a1824",
+        asphalt: "#201e2c",
+        lane: "#2a2838",
+        mark: "rgba(255,255,255,0.07)",
+        carBody: "#f0eeea", // white
+        carStripe1: "#e8253a", // red stripe
+        carStripe2: "#2563eb", // blue stripe
+        carRoof: "#2a2835", // dark cockpit
+        carWheel: "#888898",
+        red: "#e8253a",
+        blue: "#2563eb",
+        lilac: "#9090aa",
+        traffic: [
+          "#e8253a",
+          "#2563eb",
+          "#f59e0b",
+          "#10b981",
+          "#8b5cf6",
+          "#f97316",
+        ],
+        fuel: "#60a5fa",
+      };
+
+      function lc(l) {
+        return LW * l + LW / 2;
+      }
+
+      function initState() {
+        return {
+          running: false,
+          dead: false,
+          score: 0,
+          best: +localStorage.getItem("rz2_best") || 0,
+          speed: 2.6,
+          baseSpeed: 2.6,
+          lane: 1,
+          targetLane: 1,
+          carX: lc(1),
+          carY: H - 115,
+          traffic: [],
+          fuels: [],
+          particles: [],
+          roadOff: 0,
+          markOff: 0,
+          spawnT: 0,
+          fuelT: 0,
+          distT: 0,
+          fuel: 100,
+          fuelDrainT: 0,
+          flash: 0,
+          flashCol: "rgba(232,37,58,",
+          keys: {},
+          invincible: 0,
+          combo: 0,
+          comboT: 0,
+          boost: 0,
+          tilt: 0, // car lean on lane change
+        };
+      }
+
+      function spawnTraffic(s) {
+        const busy = s.traffic.filter((t) => t.y < 120).map((t) => t.lane);
+        const free = [0, 1, 2].filter((l) => !busy.includes(l));
+        if (!free.length) return;
+        const lane = free[Math.floor(Math.random() * free.length)];
+        const col = PAL.traffic[Math.floor(Math.random() * PAL.traffic.length)];
+        // Give traffic cars variety
+        const types = ["sedan", "sport", "van"];
+        const type = types[Math.floor(Math.random() * types.length)];
+        s.traffic.push({
+          lane,
+          x: lc(lane),
+          y: -TH,
+          color: col,
+          spd: s.speed * (0.3 + Math.random() * 0.35),
+          type,
+        });
+      }
+
+      function spawnFuel(s) {
+        s.fuels.push({
+          lane: Math.floor(Math.random() * 3),
+          x: lc(Math.floor(Math.random() * 3)),
+          y: -FH,
+          p: 0,
+        });
+      }
+
+      function burst(s, x, y, col, n = 14) {
+        for (let i = 0; i < n; i++) {
+          const a = Math.random() * Math.PI * 2,
+            sp = 1 + Math.random() * 5;
+          s.particles.push({
+            x,
+            y,
+            vx: Math.cos(a) * sp,
+            vy: Math.sin(a) * sp,
+            life: 1,
+            col,
+            sz: 1.5 + Math.random() * 3,
+          });
+        }
+      }
+
+      // ─── DRAW ROAD ───
+      function drawRoad(s) {
+        // Sky — soft lilac/purple gradient like the image's overcast sky
+        ctx.fillStyle = "#1a1728";
+        ctx.fillRect(0, 0, W, H * 0.2);
+        ctx.fillStyle = "#221f30";
+        ctx.fillRect(0, H * 0.15, W, H * 0.08);
+
+        // Buildings silhouette (muted, like illustration bg)
+        const bldgs = [
+          [0, 60, 42, 60, "#1f1d2b"],
+          [40, 40, 30, 80, "#221f2e"],
+          [68, 70, 36, 50, "#1d1b28"],
+          [102, 30, 50, 90, "#201e2b"],
+          [150, 55, 28, 65, "#1e1c28"],
+          [176, 35, 40, 85, "#221f2e"],
+          [214, 65, 30, 55, "#1d1b27"],
+          [242, 25, 44, 95, "#202030"],
+          [284, 48, 32, 72, "#1e1c2a"],
+          [314, 38, 36, 82, "#211f2b"],
+          [348, 60, 40, 60, "#1c1a27"],
+          [386, 30, 42, 90, "#202030"],
+          [426, 50, 36, 70, "#1e1c2a"],
+        ];
+        bldgs.forEach(([x, h, w, , col]) => {
+          ctx.fillStyle = col;
+          ctx.fillRect(x, H * 0.2 - h, w, h);
+          // tiny windows
+          ctx.fillStyle = "rgba(180,180,220,0.12)";
+          for (let wy = H * 0.2 - h + 8; wy < H * 0.2 - 4; wy += 10) {
+            for (let wx = x + 4; wx < x + w - 4; wx += 8) {
+              if (Math.random() > 0.5) ctx.fillRect(wx, wy, 4, 5);
+            }
+          }
+        });
+
+        // Road surface
+        ctx.fillStyle = PAL.road;
+        ctx.fillRect(0, H * 0.2, W, H * 0.8);
+
+        // Subtle road texture lines
+        ctx.strokeStyle = "rgba(255,255,255,0.025)";
+        ctx.lineWidth = 1;
+        for (let y = H * 0.2; y < H; y += 18) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.stroke();
+        }
+
+        // Lane dividers
+        ctx.setLineDash([32, 22]);
+        ctx.strokeStyle = "rgba(255,255,255,0.1)";
+        ctx.lineWidth = 2;
+        for (let i = 1; i < LANES; i++) {
+          const x = LW * i;
+          ctx.lineDashOffset = -s.markOff;
+          ctx.beginPath();
+          ctx.moveTo(x, H * 0.2);
+          ctx.lineTo(x, H);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        // Outer kerbs — white/red alternating (like racing kerbs)
+        const kerbSeg = 24,
+          totalKerbs = Math.ceil(H / kerbSeg) + 2;
+        for (let i = 0; i < totalKerbs; i++) {
+          const ky = H - i * kerbSeg + ((s.roadOff * 0.5) % kerbSeg) - kerbSeg;
+          ctx.fillStyle = i % 2 === 0 ? PAL.red : "#f5f5f0";
+          ctx.fillRect(0, ky, 6, kerbSeg);
+          ctx.fillRect(W - 6, ky, 6, kerbSeg);
+        }
+
+        // Centre horizon fade
+        ctx.fillStyle = "rgba(30,24,40,0.5)";
+        ctx.fillRect(0, H * 0.18, W, 20);
+      }
+
+      // ─── DRAW PLAYER CAR (top-down Porsche 911 style) ───
+      // All coords relative to car centre (0,0). Top = front of car (smaller/pointed), Bottom = rear (wider/rounded).
+      function drawPlayerCar(s) {
+        const x = s.carX,
+          y = s.carY;
+        if (s.invincible > 0 && Math.floor(s.invincible / 5) % 2 === 0) return;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(s.tilt * 0.08);
+
+        // 1. Drop Shadow (Offset for speed)
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        ctx.beginPath();
+        ctx.roundRect(-CW / 2, 8, CW, CH, 10);
+        ctx.fill();
+
+        // 2. Wheels with Brake Calipers
+        const wheels = [
+          { wx: -CW / 2 - 2, wy: -CH / 2 + 12 }, // FL
+          { wx: CW / 2 - 6, wy: -CH / 2 + 12 }, // FR
+          { wx: -CW / 2 - 2, wy: CH / 2 - 18 }, // RL
+          { wx: CW / 2 - 6, wy: CH / 2 - 18 }, // RR
+        ];
+        wheels.forEach((w) => {
+          ctx.fillStyle = "#111"; // Tire
+          ctx.beginPath();
+          ctx.roundRect(w.wx, w.wy, 8, 14, 3);
+          ctx.fill();
+          ctx.fillStyle = PAL.red; // Caliper
+          ctx.fillRect(w.wx + 2, w.wy + 4, 4, 6);
+        });
+
+        // 3. Main Body (Tapered Shape)
+        const b = ctx;
+        b.fillStyle = PAL.carBody;
+        b.beginPath();
+        b.moveTo(-18, -CH / 2); // Front left
+        b.bezierCurveTo(-22, -CH / 2, -26, 0, -28, CH / 2); // Left side curve
+        b.lineTo(28, CH / 2); // Rear
+        b.bezierCurveTo(26, 0, 22, -CH / 2, 18, -CH / 2); // Right side curve
+        b.closePath();
+        b.fill();
+
+        // 4. Racing Stripes
+        b.fillStyle = PAL.carStripe2;
+        b.fillRect(-4, -CH / 2 - 2, 3, CH);
+        b.fillStyle = PAL.carStripe1;
+        b.fillRect(1, -CH / 2 - 2, 3, CH);
+
+        // 5. Cockpit / Windshield
+        const glass = b.createLinearGradient(0, -15, 0, 15);
+        glass.addColorStop(0, "#2a2835");
+        glass.addColorStop(1, "#1a1824");
+        b.fillStyle = glass;
+        b.beginPath();
+        b.roundRect(-16, -15, 32, 28, 8);
+        b.fill();
+
+        // Glass Shine
+        b.strokeStyle = "rgba(255,255,255,0.15)";
+        b.lineWidth = 2;
+        b.beginPath();
+        b.moveTo(-10, -10);
+        b.lineTo(5, 5);
+        b.stroke();
+
+        // 6. Rear Wing (Spoiler)
+        b.fillStyle = "#111";
+        b.fillRect(-30, CH / 2 - 8, 60, 6); // Main blade
+        b.fillRect(-28, CH / 2 - 8, 4, 10); // Left mount
+        b.fillRect(24, CH / 2 - 8, 4, 10); // Right mount
+
+        // 7. Headlights (High-intensity neon)
+        b.shadowBlur = 15;
+        b.shadowColor = "#fffce0";
+        b.fillStyle = "#fffce0";
+        b.beginPath();
+        b.arc(-14, -CH / 2 + 4, 4, 0, Math.PI * 2);
+        b.fill();
+        b.beginPath();
+        b.arc(14, -CH / 2 + 4, 4, 0, Math.PI * 2);
+        b.fill();
+
+        ctx.restore();
+      }
+
+      // ─── DRAW TRAFFIC CAR ───
+      function drawTrafficCar(t) {
+        const x = t.x,
+          y = t.y;
+        ctx.save();
+        ctx.translate(x, y);
+
+        // 1. Better Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.beginPath();
+        ctx.roundRect(-TW / 2 - 2, 4, TW + 4, TH + 2, 8);
+        ctx.fill();
+
+        // 2. Main Chassis (The "Coke-Bottle" Shape)
+        ctx.fillStyle = t.color;
+        ctx.beginPath();
+        ctx.moveTo(-TW / 2 + 6, -TH / 2); // Front left
+        ctx.quadraticCurveTo(-TW / 2, -TH / 2 + 10, -TW / 2, TH / 2 - 5); // Side curve
+        ctx.lineTo(-TW / 2 + 2, TH / 2); // Rear left
+        ctx.lineTo(TW / 2 - 2, TH / 2); // Rear right
+        ctx.lineTo(TW / 2, TH / 2 - 5); // Side curve back
+        ctx.quadraticCurveTo(TW / 2, -TH / 2 + 10, TW / 2 - 6, -TH / 2); // Front right
+        ctx.closePath();
+        ctx.fill();
+
+        // 3. The "Glass House" (Windows and Roof)
+        // Windshield (Light blue tint)
+        ctx.fillStyle = "rgba(15, 15, 25, 0.7)";
+        ctx.beginPath();
+        ctx.moveTo(-TW / 2 + 10, -TH / 2 + 8);
+        ctx.lineTo(TW / 2 - 10, -TH / 2 + 8);
+        ctx.lineTo(TW / 2 - 7, -TH / 2 + 18);
+        ctx.lineTo(-TW / 2 + 7, -TH / 2 + 18);
+        ctx.fill();
+
+        // Side Windows / Roof line
+        ctx.fillStyle = "rgba(10, 10, 20, 0.8)";
+        ctx.fillRect(-TW / 2 + 7, -TH / 2 + 18, TW - 14, 15);
+
+        // Rear Window
+        ctx.fillStyle = "rgba(15, 15, 25, 0.7)";
+        ctx.fillRect(-TW / 2 + 9, -TH / 2 + 33, TW - 18, 5);
+
+        // 4. Side Mirrors (These really break the "square" look)
+        ctx.fillStyle = t.color;
+        ctx.fillRect(-TW / 2 - 3, -TH / 2 + 14, 4, 3); // Left mirror
+        ctx.fillRect(TW / 2 - 1, -TH / 2 + 14, 4, 3); // Right mirror
+
+        // 5. Tail Lights (Subtle glow)
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "rgba(255, 0, 0, 0.5)";
+        ctx.fillStyle = "#ff3333";
+        ctx.fillRect(-TW / 2 + 5, TH / 2 - 4, 8, 3);
+        ctx.fillRect(TW / 2 - 13, TH / 2 - 4, 8, 3);
+
+        // 6. Wheels (Visible from top-down)
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#111";
+        ctx.fillRect(-TW / 2 - 1, -TH / 2 + 8, 3, 10); // FL
+        ctx.fillRect(TW / 2 - 2, -TH / 2 + 8, 3, 10); // FR
+        ctx.fillRect(-TW / 2 - 1, TH / 2 - 15, 3, 10); // RL
+        ctx.fillRect(TW / 2 - 2, TH / 2 - 15, 3, 10); // RR
+
+        ctx.restore();
+      }
+
+      // ─── DRAW FUEL PICKUP ───
+      function drawFuel(f) {
+        const x = f.x,
+          y = f.y;
+        f.p = (f.p || 0) + 0.07;
+        const pulse = 0.82 + 0.18 * Math.sin(f.p);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.strokeStyle = PAL.fuel;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = PAL.fuel;
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = "rgba(20,18,36,0.85)";
+        ctx.beginPath();
+        ctx.roundRect(x - FW / 2, y - FH / 2, FW, FH, 3);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = PAL.fuel;
+        ctx.font = "bold 11px Bebas Neue";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("FUEL", x, y);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
+      function drawParticles(s) {
+        s.particles.forEach((p) => {
+          ctx.save();
+          ctx.globalAlpha = p.life;
+          ctx.fillStyle = p.col;
+          ctx.shadowColor = p.col;
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.sz * p.life, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+
+      function drawHUD(s) {
+        // Combo
+        if (s.combo >= 2) {
+          ctx.save();
+          ctx.textAlign = "center";
+          ctx.fillStyle = PAL.red;
+          ctx.shadowColor = PAL.red;
+          ctx.shadowBlur = 10;
+          ctx.font = `900 ${14 + s.combo * 2}px Barlow Condensed`;
+          ctx.fillText(`×${s.combo} COMBO!`, W / 2, H - 26);
+          ctx.restore();
+        }
+        // Boost indicator
+        if (s.boost > 0) {
+          ctx.save();
+          ctx.textAlign = "right";
+          ctx.fillStyle = "#fff";
+          ctx.shadowColor = PAL.blue;
+          ctx.shadowBlur = 12;
+          ctx.font = "900 11px Barlow Condensed";
+          ctx.fillText("BOOST ACTIVE", W - 14, H - 26);
+          ctx.restore();
+        }
+        // Speed lines overlay at high speed
+        if (s.speed > 5) {
+          const a = Math.min(0.1, (s.speed - 5) * 0.025);
+          ctx.strokeStyle = `rgba(255,255,255,${a})`;
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 10; i++) {
+            const lx = Math.random() * W;
+            const sy = H * 0.2 + Math.random() * (H * 0.8);
+            ctx.beginPath();
+            ctx.moveTo(lx, sy);
+            ctx.lineTo(lx, sy + 25 + Math.random() * 40);
+            ctx.stroke();
+          }
+        }
+      }
+
+      function drawFlash(s) {
+        if (s.flash <= 0) return;
+        ctx.save();
+        ctx.fillStyle = s.flashCol + `${s.flash * 0.3})`;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+      }
+
+      function rect(x, y, w, h) {
+        return { x: x - w / 2, y: y - h / 2, w, h };
+      }
+      function hit(a, b) {
+        return (
+          a.x < b.x + b.w &&
+          a.x + a.w > b.x &&
+          a.y < b.y + b.h &&
+          a.y + a.h > b.y
+        );
+      }
+
+      function update(s) {
+        tick++;
+        s.roadOff = (s.roadOff + s.speed) % H;
+        s.markOff = (s.markOff + s.speed * 1.3) % 54;
+
+        const L = s.keys["ArrowLeft"] || s.keys["a"] || s.keys["A"];
+        const R = s.keys["ArrowRight"] || s.keys["d"] || s.keys["D"];
+        if (L && s.targetLane > 0) {
+          s.targetLane--;
+          s.tilt = 0.3;
+          s.keys["ArrowLeft"] = s.keys["a"] = s.keys["A"] = false;
+        }
+        if (R && s.targetLane < 2) {
+          s.targetLane++;
+          s.tilt = -0.3;
+          s.keys["ArrowRight"] = s.keys["d"] = s.keys["D"] = false;
+        }
+        s.tilt *= 0.85;
+
+        const targetX = lc(s.targetLane);
+        s.carX += (targetX - s.carX) * 0.14;
+
+        s.distT++;
+        if (s.distT % 250 === 0) s.baseSpeed += 0.16;
+        s.speed = s.baseSpeed + (s.boost > 0 ? 1.6 : 0);
+        if (s.boost > 0) s.boost--;
+
+        s.fuelDrainT++;
+        if (s.fuelDrainT % 58 === 0) {
+          s.fuel = Math.max(0, s.fuel - (1 + (s.speed - 2.6) * 0.38));
+          if (s.fuel <= 0) {
+            die(s);
+            return;
+          }
+        }
+
+        s.score += Math.floor(s.speed * 0.55);
+
+        const si = Math.max(30, 86 - s.speed * 7);
+        s.spawnT++;
+        if (s.spawnT >= si) {
+          spawnTraffic(s);
+          s.spawnT = 0;
+        }
+        s.fuelT++;
+        if (s.fuelT >= 270) {
+          spawnFuel(s);
+          s.fuelT = 0;
+        }
+
+        s.traffic.forEach((t) => (t.y += s.speed - t.spd));
+        s.traffic = s.traffic.filter((t) => t.y < H + 80);
+        s.fuels.forEach((f) => (f.y += s.speed * 0.6));
+        s.fuels = s.fuels.filter((f) => f.y < H + 40);
+        s.particles.forEach((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= 0.038;
+          p.vx *= 0.93;
+          p.vy *= 0.93;
+        });
+        s.particles = s.particles.filter((p) => p.life > 0);
+
+        if (s.invincible <= 0) {
+          const pr = rect(s.carX, s.carY, CW - 10, CH - 10);
+          for (const t of s.traffic) {
+            if (hit(pr, rect(t.x, t.y, TW - 8, TH - 10))) {
+              burst(s, s.carX, s.carY, PAL.red, 22);
+              die(s);
+              return;
+            }
+          }
+        } else s.invincible--;
+
+        const pr2 = rect(s.carX, s.carY, CW + 4, CH + 4);
+        s.fuels = s.fuels.filter((f) => {
+          if (hit(pr2, rect(f.x, f.y, FW + 4, FH + 4))) {
+            burst(s, f.x, f.y, PAL.blue, 14);
+            s.fuel = Math.min(100, s.fuel + 34);
+            s.score += 500 + s.combo * 250;
+            s.combo++;
+            s.comboT = 120;
+            s.flash = 0.6;
+            s.flashCol = "rgba(37,99,235,";
+            s.boost = 90;
+            return false;
+          }
+          return true;
+        });
+        if (s.comboT > 0) s.comboT--;
+        else if (s.comboT === 0) s.combo = 0;
+        if (s.flash > 0) s.flash = Math.max(0, s.flash - 0.055);
+      }
+
+      function die(s) {
+        s.running = false;
+        s.dead = true;
+        s.flash = 1;
+        s.flashCol = "rgba(232,37,58,";
+        if (s.score > s.best) {
+          s.best = s.score;
+          localStorage.setItem("rz2_best", s.best);
+        }
+        setTimeout(() => showOverlay(s, true), 350);
+      }
+
+      function draw(s) {
+        drawRoad(s);
+        s.fuels.forEach((f) => drawFuel(f));
+        s.traffic.forEach((t) => drawTrafficCar(t));
+        drawPlayerCar(s);
+        drawParticles(s);
+        drawHUD(s);
+        drawFlash(s);
+      }
+
+      function updateDOM(s) {
+        document.getElementById("score-disp").textContent = s.score
+          .toString()
+          .padStart(6, "0");
+        document.getElementById("best-disp").textContent = s.best
+          .toString()
+          .padStart(6, "0");
+        const f = s.fuel / 100;
+        document.getElementById("fuel-pct").textContent =
+          Math.round(s.fuel) + "%";
+        const ff = document.getElementById("fuel-fill");
+        ff.style.width = f * 100 + "%";
+        ff.style.background =
+          f > 0.5 ? "var(--blue)" : f > 0.25 ? "#f59e0b" : "var(--red)";
+        document.getElementById("spd-disp").textContent = Math.round(
+          s.speed * 40,
+        )
+          .toString()
+          .padStart(3, "0");
+      }
+
+      function loop() {
+        if (!state.running) return;
+        update(state);
+        draw(state);
+        updateDOM(state);
+        raf = requestAnimationFrame(loop);
+      }
+
+      function showOverlay(s, died) {
+        const ov = document.getElementById("overlay");
+        ov.style.display = "flex";
+        const m = document.getElementById("ov-main");
+        const sc = document.getElementById("ov-score");
+        const be = document.getElementById("ov-best");
+        const btn = document.getElementById("start-btn");
+        const sub = document.querySelector(".ov-sub");
+        if (died) {
+          m.textContent = "CRASHED";
+          sub.textContent = "スピードのために · あなたのために";
+          sc.style.display = "block";
+          sc.textContent = s.score.toString().padStart(6, "0");
+          be.style.display = "block";
+          if (s.score >= s.best) {
+            be.className = "ov-best-val new";
+            be.textContent = "★ NEW RECORD ★ 新記録";
+          } else {
+            be.className = "ov-best-val old";
+            be.textContent = "BEST: " + s.best.toString().padStart(6, "0");
+          }
+          btn.textContent = "RETRY RACE";
+        } else {
+          m.textContent = "RACERZ";
+          sub.textContent = "スピードのために · あなたのために";
+          sc.style.display = "none";
+          be.style.display = "none";
+          btn.textContent = "START RACE";
+        }
+      }
+
+      function startGame() {
+        cancelAnimationFrame(raf);
+        const best = state
+          ? state.best
+          : +localStorage.getItem("rz2_best") || 0;
+        state = initState();
+        state.best = best;
+        state.running = true;
+        document.getElementById("overlay").style.display = "none";
+        loop();
+      }
+
+      document.getElementById("start-btn").addEventListener("click", startGame);
+      document.addEventListener("keydown", (e) => {
+        if (!state) return;
+        if (!state.running && (e.key === " " || e.key === "Enter")) {
+          startGame();
+          return;
+        }
+        state.keys[e.key] = true;
+        if (["ArrowLeft", "ArrowRight", " "].includes(e.key))
+          e.preventDefault();
+      });
+      document.addEventListener("keyup", (e) => {
+        if (state) state.keys[e.key] = false;
+      });
+      let tx = null;
+      C.addEventListener(
+        "touchstart",
+        (e) => {
+          tx = e.touches[0].clientX;
+          e.preventDefault();
+        },
+        { passive: false },
+      );
+      C.addEventListener(
+        "touchend",
+        (e) => {
+          if (tx === null || !state || !state.running) return;
+          const dx = e.changedTouches[0].clientX - tx;
+          if (dx < -20 && state.targetLane > 0) state.targetLane--;
+          if (dx > 20 && state.targetLane < 2) state.targetLane++;
+          tx = null;
+        },
+        { passive: false },
+      );
+
+      state = initState();
+      draw(state);
+      updateDOM(state);
+    </script>
+  </body>
+</html>
